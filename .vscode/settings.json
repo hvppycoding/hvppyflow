@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/../../../python_embeded/python",
+  "python.analysis.extraPaths": [
+    "../../../ComfyUI",
+  ],
+  "python.analysis.typeCheckingMode": "basic"
+}
