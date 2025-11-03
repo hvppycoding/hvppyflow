@@ -1,7 +1,7 @@
 from comfy.comfy_types.node_typing import IO
 import time
 
-class HPDebug:
+class HFDebug:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -32,7 +32,7 @@ class HPDebug:
     def notify(self, text, unique_id=None):
         return {"ui": {"text": text}, "result": (text,)}
 
-class HPSleep:
+class HFSleep:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -53,7 +53,7 @@ class HPSleep:
         time.sleep(total_seconds)
         return input,
 
-class HPSplitText:
+class HFSplitText:
     @classmethod
     def INPUT_TYPES(cls):
         return {

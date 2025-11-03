@@ -4,11 +4,11 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 app.registerExtension({
     name: "hvppyflow.debug_nodes",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        if (nodeData.name === "HPDebug") {
+        if (nodeData.name === "HFDebug") {
             const onExecuted = nodeType.prototype.onExecuted;
             nodeType.prototype.onExecuted = function (message) {
-                console.log("HPDebug - message:", message);
-                console.log("HPDebug - this", this);
+                console.log("HFDebug - message:", message);
+                console.log("HFDebug - this", this);
                 onExecuted?.apply(this, arguments);
 
                 if (this.widgets) {
