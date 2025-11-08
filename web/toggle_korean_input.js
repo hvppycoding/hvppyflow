@@ -1,10 +1,12 @@
 import { app } from "../../scripts/app.js";
 import { KoreanInput } from "./korean_input.js";
 
+
 app.registerExtension({
     name: "hvppyflow.toggle_korean_input",
     async setup() {
         try {
+            const { krSvgMarkup, enSvgMarkup } = await import("./input_icons.js");
             // Korean input handling setup
             let korean_input = new KoreanInput();
 
@@ -14,22 +16,34 @@ app.registerExtension({
 
             let b_isKorean = false; // true = 한글, false = Eng
 
-            const label = document.createElement("span");
-            label.textContent = "Eng";
+            const iconContainer = document.createElement('span');
+            iconContainer.innerHTML = enSvgMarkup;
+            iconContainer.style.display = 'flex';
+            iconContainer.style.alignItems = 'center';
+            iconContainer.style.justifyContent = 'center';
+            iconContainer.style.width = '1.2rem';
+            iconContainer.style.height = '1.2rem';
 
             const langButton = new ComfyButton({
-                icon: "keyboard",
-                content: label,
-                tooltip: "HvppyFlow: 한/EN (Ctrl+Space) - (Not Implemented)",
+                content: iconContainer,
+                tooltip: "HvppyFlow: 한글/English (Ctrl+Space)",
                 classList: "comfyui-button comfyui-menu-mobile-collapse",
             });
 
+            console.log(langButton);
+            // langButton.element.innerHTML = svg;
+
             const updateButton = (isKorean) => {
-                label.textContent = isKorean ? "한글" : "Eng";
+                if (isKorean) {
+                    iconContainer.innerHTML = krSvgMarkup;
+                } else {
+                    iconContainer.innerHTML = enSvgMarkup;
+                }
                 langButton.element.classList.toggle("primary", isKorean); // Highlight when Korean mode is active
             };
 
             const setLang = (ko) => {
+                if (ko === b_isKorean) return;
                 b_isKorean = ko;
                 if (b_isKorean) {
                     korean_input.setKoreanMode();
@@ -62,10 +76,11 @@ app.registerExtension({
 
             document.addEventListener("keydown", onKeyDown, true);
             document.addEventListener("mousedown", (e) => { korean_input.reset(); }, true);
-            
+
             const cmGroup = new ComfyButtonGroup(langButton.element);
             app.menu?.settingsGroup.element.before(cmGroup.element);
         } catch (e) {
+            console.error(e);
             console.log('ComfyUI is outdated. New style menu based features are disabled.');
         }
     }
