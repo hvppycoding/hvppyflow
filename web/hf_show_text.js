@@ -7,8 +7,14 @@ app.registerExtension({
 	async beforeRegisterNodeDef(nodeType, nodeData, app) {
 		if (nodeData.name === "HFShowTextNode") {
 			function populate(textList) {
+				// Normalize
 				if (!Array.isArray(textList)) textList = [textList];
-				const existingCombo = this.widgets?.find(w => w.name === "text_index");
+				// Early exit if identical to previous list (length + element equality)
+				if (Array.isArray(this._lastTextList)) {
+					const prev = this._lastTextList;
+					if (prev.length === textList.length && prev.every((v,i)=>v===textList[i])) return;
+				}
+				const existingCombo = this.widgets?.find(w => w.name === "page");
 				let displayWidget = this.widgets?.find(w => w.name === "text_display");
 
 				// Helper to create display widget if absent
@@ -35,58 +41,39 @@ app.registerExtension({
 					ensureDisplayWidget();
 					displayWidget.value = textList[0];
 				} else if (textList.length > 1) {
-					// Use label "i / N" itself as combo value and keep label->index mapping
-					let comboWidget = existingCombo;
-					const buildLabels = (len) => Array.from({ length: len }, (_, i) => `${i + 1} / ${len}`);
-					// Prepare mapping object (non-serialized)
-					const rebuildMap = (labels) => {
-						this._textLabelIndexMap = {};
-						labels.forEach((lab, i) => { this._textLabelIndexMap[lab] = i; });
-					};
-
-					if (!comboWidget) {
-						const labels = buildLabels(textList.length);
-						rebuildMap(labels);
-						comboWidget = this.addWidget("combo", "text_index", labels[0], () => {
-							const idx = this._textLabelIndexMap[comboWidget.value] ?? 0;
-							displayWidget.value = textList[idx];
-						}, { values: labels });
-						// Disable serialization (no need to persist selection)
-						comboWidget.serialize = false;
-						comboWidget.options.serialize = false;
-					} else {
-						// Rebuild labels/map if length changed; try to preserve previous selection
-						if (comboWidget.options.values.length !== textList.length) {
-							const prevLabel = comboWidget.value;
-							const prevIndex = this._textLabelIndexMap?.[prevLabel] ?? 0;
-							const labels = buildLabels(textList.length);
-							comboWidget.options.values = labels;
-							rebuildMap(labels);
-							const newIndex = Math.min(prevIndex, textList.length - 1);
-							comboWidget.value = labels[newIndex];
+					// Always recreate combo widget (do not reuse old one)
+					if (existingCombo) {
+						const idx = this.widgets.indexOf(existingCombo);
+						if (idx >= 0) {
+							existingCombo.onRemove?.();
+							this.widgets.splice(idx, 1);
 						}
 					}
+					const buildLabels = (len) => Array.from({ length: len }, (_, i) => `${i + 1} / ${len}`);
+					const labels = buildLabels(textList.length);
+					// Build mapping before creating widget so callback can access it
+					this._textLabelIndexMap = {};
+					labels.forEach((lab,i)=>{ this._textLabelIndexMap[lab] = i; });
 
 					ensureDisplayWidget();
-					// Ensure combo widget is placed before the display widget
-					if (comboWidget) {
-						const comboIdx = this.widgets.indexOf(comboWidget);
-						const displayIdx = this.widgets.indexOf(displayWidget);
-						if (comboIdx !== -1 && displayIdx !== -1 && comboIdx > displayIdx) {
-							// Move: remove combo then insert it before display widget
-							this.widgets.splice(comboIdx, 1);
-							const newDisplayIdx = this.widgets.indexOf(displayWidget); // Re-check index after removal
-							this.widgets.splice(newDisplayIdx, 0, comboWidget);
-						}
-					}
-					// Set display value initially or after update
-					const currentIdx = this._textLabelIndexMap[comboWidget.value] ?? 0;
-					displayWidget.value = textList[currentIdx];
-
-					comboWidget.onChange = () => {
+					let comboWidget = this.addWidget("combo", "page", labels[0], () => {
 						const idx = this._textLabelIndexMap[comboWidget.value] ?? 0;
 						displayWidget.value = textList[idx];
-					};
+					}, { values: labels });
+					comboWidget.serialize = false;
+					comboWidget.options.serialize = false;
+
+					// Ensure combo before display
+					const comboIdx = this.widgets.indexOf(comboWidget);
+					const displayIdx = this.widgets.indexOf(displayWidget);
+					if (comboIdx !== -1 && displayIdx !== -1 && comboIdx > displayIdx) {
+						this.widgets.splice(comboIdx,1);
+						const newDisplayIdx = this.widgets.indexOf(displayWidget);
+						this.widgets.splice(newDisplayIdx,0,comboWidget);
+					}
+
+					// Initial display
+					displayWidget.value = textList[0];
 				}
 
 				requestAnimationFrame(() => {
@@ -96,6 +83,9 @@ app.registerExtension({
 					this.onResize?.(sz);
 					app.graph.setDirtyCanvas(true, false);
 				});
+
+				// Snapshot list for future change detection
+				this._lastTextList = textList.slice();
 			}
 
 			// When the node is executed, we receive the text in message.text
