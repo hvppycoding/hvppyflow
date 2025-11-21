@@ -14,7 +14,7 @@ app.registerExtension({
             const { ComfyButton } = await import("../../scripts/ui/components/button.js");
             const { ComfyButtonGroup } = await import("../../scripts/ui/components/buttonGroup.js");
 
-            let b_isKorean = false; // true = 한글, false = Eng
+            let b_isKorean = false; // true = Korean, false = English
 
             const iconContainer = document.createElement('span');
             iconContainer.innerHTML = enSvgMarkup;
@@ -26,7 +26,7 @@ app.registerExtension({
 
             const langButton = new ComfyButton({
                 content: iconContainer,
-                tooltip: "HvppyFlow: 한글/English (Ctrl+Space)",
+                tooltip: "HvppyFlow: Korean/English (Ctrl+Space)",
                 classList: "comfyui-button comfyui-menu-mobile-collapse",
             });
 

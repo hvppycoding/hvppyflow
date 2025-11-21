@@ -4,12 +4,12 @@ export class KoreanInput {
     constructor() {
         // Keyboard mapping in normal state
         this.normalMap = {
-            // Consonants (초성/종성)
+            // Consonants (initial/final Jamo)
             'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ',
             'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ',
             'z': 'ㅋ', 'x': 'ㅌ', 'c': 'ㅊ', 'v': 'ㅍ',
             
-            // Vowels (중성)
+            // Vowels (medial Jamo)
             'y': 'ㅛ', 'u': 'ㅕ', 'l': 'ㅣ', 'o': 'ㅐ', 'p': 'ㅔ',
             'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'i': 'ㅑ',
             'b': 'ㅠ', 'n': 'ㅜ', 'm': 'ㅡ'
